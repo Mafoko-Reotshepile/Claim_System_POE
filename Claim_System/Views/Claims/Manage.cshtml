@@ -6,14 +6,9 @@
 <h2 class="text-center mb-4">Coordinator - Manage Claims</h2>
 
 @if (TempData["ErrorMessage"] != null)
-{
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
-
 @if (TempData["SuccessMessage"] != null)
-{
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
 
 @if (!Model.Any())
 {
@@ -57,7 +52,6 @@ else
                             {
                                 var fileName = System.IO.Path.GetFileName(file);
                                 <a asp-action="DownloadFile" asp-route-id="@claim.Id" asp-route-file="@fileName" class="btn btn-sm btn-outline-info">@fileName</a>
-                
                                 <br />
                             }
                         }
