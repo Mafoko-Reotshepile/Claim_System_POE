@@ -11,8 +11,10 @@ namespace Claim_System.Models
         public double HoursWorked { get; set; }
         public double HourlyRate { get; set; }
         public string Notes { get; set; } = string.Empty;
-        public string? FileName { get; set; }
-        public string UploadedFiles { get; set; }
+
+        // List of uploaded file paths
+        public List<string> UploadedFiles { get; set; } = new List<string>();
+
         public string Status { get; set; } = "Pending";
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
         public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;

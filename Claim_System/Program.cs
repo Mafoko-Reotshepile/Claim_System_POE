@@ -4,9 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// MVC + cookie authentication
 builder.Services.AddControllersWithViews();
 
-// cookie auth
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -18,7 +19,8 @@ builder.Services.AddSession();
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/Home/Error");
+if (!app.Environment.IsDevelopment())
+    app.UseExceptionHandler("/Home/Error");
 
 app.UseStaticFiles();
 app.UseRouting();
