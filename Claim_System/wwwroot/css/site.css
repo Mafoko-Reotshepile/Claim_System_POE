@@ -1,0 +1,119 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f7f7f7;
+}
+
+header {
+    background: #004080;
+    color: white;
+    padding: 14px 20px;
+}
+
+    header h1 {
+        margin: 0;
+        display: inline-block;
+        font-size: 20px;
+    }
+
+nav {
+    display: inline-block;
+    margin-left: 20px;
+}
+
+    nav a {
+        color: #cfe8ff;
+        margin-right: 12px;
+        text-decoration: none;
+    }
+
+.container {
+    padding: 20px;
+    max-width: 1100px;
+    margin: 20px auto;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.form-row {
+    margin-bottom: 12px;
+}
+
+input[type="text"], input[type="number"], textarea {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+table.claims-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.claims-table th, .claims-table td {
+    border: 1px solid #eee;
+    padding: 8px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.btn {
+    padding: 6px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-success {
+    background: #2e7d32;
+    color: white;
+}
+
+.btn-danger {
+    background: #c62828;
+    color: white;
+}
+
+.alert {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.alert-danger {
+    background: #fdecea;
+    color: #611a15;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background: #e6f4ea;
+    color: #1b5e20;
+    border: 1px solid #c3e6cb;
+}
+
+.field-validation {
+    color: #c62828;
+    font-size: 12px;
+}
+
+.status-pending {
+    background: #fff;
+}
+
+.status-approved {
+    background: #e9fbe9;
+}
+
+.status-rejected {
+    background: #fff1f0;
+}
+
+.small {
+    color: #666;
+    font-size: 12px;
+}

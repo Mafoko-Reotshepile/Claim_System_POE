@@ -1,0 +1,88 @@
+@model IEnumerable<Claim_System.Models.Claim>
+@{
+    ViewData["Title"] = "Manage Claims";
+}
+
+<h2 class="text-center mb-4">Coordinator - Manage Claims</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">No claims submitted yet.</div>
+}
+else
+{
+    <table class="table table-hover table-bordered align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Lecturer</th>
+                <th>Hours</th>
+                <th>Rate</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Documents</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var claim in Model)
+            {
+                <tr>
+                    <td>@claim.Id</td>
+                    <td>@claim.LecturerName</td>
+                    <td>@claim.HoursWorked</td>
+                    <td>@claim.HourlyRate</td>
+                    <td>@(claim.HoursWorked* claim.HourlyRate)</td>
+                    <td>
+                        <span class="badge @(claim.Status == "Approved" ? "bg-success" : claim.Status == "Rejected" ? "bg-danger" : "bg-warning text-dark")">
+                            @claim.Status
+                        </span>
+                    </td>
+                    <td>@claim.SubmittedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        @if (claim.UploadedFiles != null && claim.UploadedFiles.Any())
+                        {
+                            foreach (var file in claim.UploadedFiles)
+                            {
+                                var fileName = System.IO.Path.GetFileName(file);
+                                <a asp-action="DownloadFile" asp-route-id="@claim.Id" asp-route-file="@fileName" class="btn btn-sm btn-outline-info">@fileName</a>
+                
+                                <br />
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">None</span>
+                        }
+                    </td>
+                    <td>
+                        @if (claim.Status == "Pending")
+                        {
+                            <form asp-action="Approve" method="post" asp-route-id="@claim.Id" style="display:inline;">
+                                <button class="btn btn-sm btn-success">Approve</button>
+                            </form>
+                            <form asp-action="Reject" method="post" asp-route-id="@claim.Id" style="display:inline;">
+                                <button class="btn btn-sm btn-danger">Reject</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No actions</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
