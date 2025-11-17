@@ -16,10 +16,11 @@ namespace Claim_System.Controllers
             return View();
         }
 
+
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password, string? returnUrl)
         {
-            // Simple hard-coded authentication (later connect to DB)
+           
             username = username?.Trim().ToLower();
             password = password?.Trim();
 
@@ -31,6 +32,7 @@ namespace Claim_System.Controllers
                 ViewBag.Error = "Invalid username or password.";
                 return View();
             }
+
 
             // Create user claims
             var claims = new List<Claim>
@@ -46,11 +48,9 @@ namespace Claim_System.Controllers
             if (!string.IsNullOrEmpty(returnUrl))
                 return LocalRedirect(returnUrl);
 
-            // Redirect based on role
-            if (isCoordinator)
-                return RedirectToAction("Manage", "Claims");
-            else
-                return RedirectToAction("Index", "Claims");
+            return isCoordinator
+                ? RedirectToAction("Manage", "Claims")
+                : RedirectToAction("Index", "Claims");
         }
 
         public async Task<IActionResult> Logout()
