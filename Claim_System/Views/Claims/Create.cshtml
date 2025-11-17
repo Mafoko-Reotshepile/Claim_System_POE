@@ -5,8 +5,14 @@
 
 <h2>Submit Claim</h2>
 
-@if (TempData["ErrorMessage"] != null) { <div class="alert alert-danger">@TempData["ErrorMessage"]</div> }
-@if (TempData["SuccessMessage"] != null) { <div class="alert alert-success">@TempData["SuccessMessage"]</div> }
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
 
 <form asp-action="Create" method="post" enctype="multipart/form-data" style="max-width:680px">
     <div>
@@ -38,8 +44,8 @@
 
     <div>
         <label>Supporting Document</label>
-        <input type="file" name="file" class="form-control" />
-        <small>Allowed: .pdf, .doc, .docx, .xlsx | Max 5 MB</small>
+        <input type="file" name="files" class="form-control" multiple />
+        <small>Allowed: .pdf, .doc, .docx, .xlsx | Max 10 MB</small>
     </div>
 
     <br />
@@ -55,7 +61,7 @@
             const rate = parseFloat(document.getElementById('HourlyRate').value) || 0;
             document.getElementById('TotalDisplay').innerText = 'R ' + (hours * rate).toFixed(2);
         }
-        // initial
         calculateTotal();
     </script>
 }
+
