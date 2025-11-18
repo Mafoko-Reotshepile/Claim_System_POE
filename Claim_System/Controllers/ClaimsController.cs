@@ -18,14 +18,12 @@ namespace Claim_System.Controllers
         private static readonly string[] AllowedExtensions = { ".pdf", ".doc", ".docx", ".xlsx" };
         private readonly string _uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
 
-
         public ClaimsController()
         {
             if (!Directory.Exists(_uploadFolder))
                 Directory.CreateDirectory(_uploadFolder);
         }
 
-        // Lecturer: view own claims
         [Authorize(Roles = "Lecturer")]
         public IActionResult Index()
         {
@@ -34,71 +32,85 @@ namespace Claim_System.Controllers
             return View(myClaims);
         }
 
-        // Lecturer: create form
         [Authorize(Roles = "Lecturer")]
         [HttpGet]
-        public IActionResult Create() => View(new Claim());
+        public IActionResult Create()
+        {
+            return View(new Claim());
+        }
 
-        // Lecturer: create POST
         [Authorize(Roles = "Lecturer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Claim model, List<IFormFile>? files)
         {
-            try
-            {
-                if (model.HoursWorked <= 0) ModelState.AddModelError(nameof(model.HoursWorked), "Hours must be > 0");
-                if (model.HourlyRate <= 0) ModelState.AddModelError(nameof(model.HourlyRate), "Rate must be > 0");
+            if (model.HoursWorked <= 0) ModelState.AddModelError(nameof(model.HoursWorked), "Hours must be > 0");
+            if (model.HourlyRate <= 0) ModelState.AddModelError(nameof(model.HourlyRate), "Rate must be > 0");
 
-                var savedFiles = new List<string>();
-                if (files != null && files.Count > 0)
+            var savedFiles = new List<string>();
+            if (files != null && files.Count > 0)
+            {
+                foreach (var file in files)
                 {
-                    foreach (var file in files)
+                    if (file == null || file.Length == 0) continue;
+                    var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+                    if (!AllowedExtensions.Contains(ext))
                     {
-                        if (file == null || file.Length == 0) continue;
-                        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-                        if (!AllowedExtensions.Contains(ext))
-                        {
-                            ModelState.AddModelError("files", $"File type {ext} not allowed.");
-                            continue;
-                        }
-                        if (file.Length > 10 * 1024 * 1024) continue; // 10 MB max
-
-                        var unique = $"{Guid.NewGuid():N}{ext}";
-                        var relPath = Path.Combine("uploads", unique).Replace('\\', '/');
-                        var physical = Path.Combine(_uploadFolder, unique);
-                        using (var stream = new FileStream(physical, FileMode.Create))
-                            await file.CopyToAsync(stream);
-                        savedFiles.Add(relPath);
+                        ModelState.AddModelError("files", $"File type {ext} not allowed.");
+                        continue;
                     }
+                    if (file.Length > 10 * 1024 * 1024)
+                    {
+                        ModelState.AddModelError("files", $"File {file.FileName} exceeds 10 MB limit.");
+                        continue;
+                    }
+
+                    var unique = $"{Guid.NewGuid():N}{ext}";
+                    var relPath = Path.Combine("uploads", unique).Replace('\\', '/');
+                    var physical = Path.Combine(_uploadFolder, unique);
+                    using (var stream = new FileStream(physical, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    savedFiles.Add(relPath);
                 }
-
-
-                if (!ModelState.IsValid) return View(model);
-
-                model.Id = _nextId++;
-                model.LecturerName = User.Identity?.Name ?? model.LecturerName;
-                model.SubmittedAt = DateTime.UtcNow;
-                model.LastUpdatedAt = model.SubmittedAt;
-                if (savedFiles.Any()) model.UploadedFiles.AddRange(savedFiles);
-                _claims.Add(model);
-
-                TempData["SuccessMessage"] = "Claim submitted.";
-                return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+
+            if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Error submitting claim: " + ex.Message;
                 return View(model);
             }
+
+            model.Id = _nextId++;
+            model.LecturerName = User.Identity?.Name ?? model.LecturerName;
+            model.SubmittedAt = DateTime.UtcNow;
+            model.LastUpdatedAt = model.SubmittedAt;
+            if (savedFiles.Any()) model.UploadedFiles.AddRange(savedFiles);
+            _claims.Add(model);
+
+            TempData["SuccessMessage"] = "Claim submitted.";
+            return RedirectToAction(nameof(Index));
         }
 
-        // Coordinator: view all claims
         [Authorize(Roles = "Coordinator")]
-        [HttpGet]
-        public IActionResult Manage() => View(_claims.OrderBy(c => c.Status).ThenByDescending(c => c.SubmittedAt).ToList());
+        public IActionResult Manage()
+        {
+            var model = _claims.OrderBy(c => c.Status).ThenByDescending(c => c.SubmittedAt).ToList();
+            return View(model);
+        }
 
-        // Download file
+        [HttpGet]
+        public IActionResult Details(int id)
+        {
+            var claim = _claims.FirstOrDefault(c => c.Id == id);
+            if (claim == null) return NotFound();
+
+            if (User.IsInRole("Lecturer") && !string.Equals(User.Identity?.Name, claim.LecturerName, StringComparison.OrdinalIgnoreCase))
+                return Forbid();
+
+            return View(claim);
+        }
+
         [HttpGet]
         public IActionResult DownloadFile(int id, string file)
         {
@@ -120,7 +132,9 @@ namespace Claim_System.Controllers
                 ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 _ => "application/octet-stream"
             };
-            return File(System.IO.File.ReadAllBytes(physical), contentType, Path.GetFileName(physical));
+
+            var bytes = System.IO.File.ReadAllBytes(physical);
+            return File(bytes, contentType, Path.GetFileName(physical));
         }
 
         [Authorize(Roles = "Coordinator")]

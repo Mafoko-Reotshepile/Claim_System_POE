@@ -16,29 +16,27 @@ namespace Claim_System.Controllers
             return View();
         }
 
-
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password, string? returnUrl)
         {
-           
-            username = username?.Trim().ToLower();
-            password = password?.Trim();
+            username = username?.Trim().ToLower()??"";
+            password = password?.Trim()??"";
 
             bool isLecturer = username == "lecturer" && password == "123";
             bool isCoordinator = username == "coordinator" && password == "123";
+            bool isHR = username == "hr" && password == "123";
 
-            if (!isLecturer && !isCoordinator)
+
+            if (!isLecturer && !isCoordinator && !isHR)
             {
                 ViewBag.Error = "Invalid username or password.";
                 return View();
             }
 
-
-            // Create user claims
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, isCoordinator ? "Coordinator" : "Lecturer")
+                new Claim(ClaimTypes.Role, isCoordinator ? "Coordinator": isHR ? "HR" : "Lecturer")
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -48,11 +46,17 @@ namespace Claim_System.Controllers
             if (!string.IsNullOrEmpty(returnUrl))
                 return LocalRedirect(returnUrl);
 
-            return isCoordinator
-                ? RedirectToAction("Manage", "Claims")
-                : RedirectToAction("Index", "Claims");
-        }
+            if (isCoordinator)
+                return RedirectToAction("Manage", "Claims");
 
+            if (isHR)
+                return RedirectToAction("Report", "Hr");
+
+            return RedirectToAction("Index", "Claims");
+        }
+        
+
+        [HttpPost]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

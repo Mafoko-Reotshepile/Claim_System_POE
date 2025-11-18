@@ -14,7 +14,7 @@ namespace Claim_System.Models
 
         // List of uploaded file paths
         public List<string> UploadedFiles { get; set; } = new List<string>();
-
+      
         public string Status { get; set; } = "Pending";
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
         public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;
