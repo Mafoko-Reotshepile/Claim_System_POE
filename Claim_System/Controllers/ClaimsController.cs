@@ -13,7 +13,7 @@ namespace Claim_System.Controllers
     [Authorize]
     public class ClaimsController : Controller
     {
-        private static List<Claim> _claims = new List<Claim>();
+        public static List<Claim> _claims = new List<Claim>();
         private static int _nextId = 1;
         private static readonly string[] AllowedExtensions = { ".pdf", ".doc", ".docx", ".xlsx" };
         private readonly string _uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
