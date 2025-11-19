@@ -10,7 +10,7 @@ namespace Claim_System.Models
         public string LecturerId { get; set; } = string.Empty;
         public double HoursWorked { get; set; }
         public double HourlyRate { get; set; }
-        public string Notes { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         // List of uploaded file paths
         public List<string> UploadedFiles { get; set; } = new List<string>();

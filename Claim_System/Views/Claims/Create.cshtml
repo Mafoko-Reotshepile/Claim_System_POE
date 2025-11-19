@@ -1,67 +1,38 @@
-@model Claim_System.Models.LecturerClaim
+@model Claim_System.Models.SubmitClaimViewModel
 @{
     ViewData["Title"] = "Submit Claim";
 }
 
 <h2>Submit Claim</h2>
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
-
-<form asp-action="Create" method="post" enctype="multipart/form-data" style="max-width:680px">
-    <div>
-        <label>Lecturer Name</label>
-        <input asp-for="LecturerName" class="form-control" />
-    </div>
-
-    <div>
-        <label>Hours Worked</label>
-        <input asp-for="HoursWorked" id="HoursWorked" type="number" step="0.1" class="form-control" oninput="calculateTotal()" />
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label asp-for="HoursWorked" class="form-label"></label>
+        <input asp-for="HoursWorked" class="form-control" />
         <span asp-validation-for="HoursWorked" class="text-danger"></span>
     </div>
 
-    <div>
-        <label>Hourly Rate (R)</label>
-        <input asp-for="HourlyRate" id="HourlyRate" type="number" step="0.01" class="form-control" oninput="calculateTotal()" />
+    <div class="mb-3">
+        <label asp-for="HourlyRate" class="form-label"></label>
+        <input asp-for="HourlyRate" class="form-control" />
         <span asp-validation-for="HourlyRate" class="text-danger"></span>
     </div>
 
-    <div>
-        <label>Total (R)</label>
-        <div id="TotalDisplay" class="form-control-plaintext">R 0.00</div>
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
-    <div>
-        <label>Notes</label>
-        <textarea asp-for="Notes" class="form-control"></textarea>
+    <div class="mb-3">
+        <label asp-for="Files" class="form-label">Upload Files (optional)</label>
+        <input asp-for="Files" type="file" class="form-control" multiple />
+        <span asp-validation-for="Files" class="text-danger"></span>
     </div>
 
-    <div>
-        <label>Supporting Document</label>
-        <input type="file" name="files" class="form-control" multiple />
-        <small>Allowed: .pdf, .doc, .docx, .xlsx | Max 10 MB</small>
-    </div>
-
-    <br />
-    <button type="submit" class="btn btn-success">Submit Claim</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-success">Submit</button>
 </form>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script>
-        function calculateTotal() {
-            const hours = parseFloat(document.getElementById('HoursWorked').value) || 0;
-            const rate = parseFloat(document.getElementById('HourlyRate').value) || 0;
-            document.getElementById('TotalDisplay').innerText = 'R ' + (hours * rate).toFixed(2);
-        }
-        calculateTotal();
-    </script>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 }
-

@@ -1,0 +1,13 @@
+﻿@{
+    ViewData["Title"] = "HR Dashboard";
+}
+
+<h2>HR Dashboard</h2>
+
+<p>Welcome, @User.Identity.Name</p>
+
+<div class="list-group">
+    <a asp-controller="Hr" asp-action="Report" class="list-group-item list-group-item-action">
+        View Approved Claims Report
+    </a>
+</div>

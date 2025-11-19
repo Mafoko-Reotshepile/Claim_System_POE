@@ -1,1 +1,39 @@
-﻿
+﻿@model Claim_System.Models.LecturerClaim
+@{
+    ViewData["Title"] = "Claim Details";
+}
+
+<h2>Claim Details</h2>
+
+<div class="mb-3">
+    <strong>Lecturer:</strong> @Model.LecturerName
+</div>
+<div class="mb-3">
+    <strong>Description:</strong> @Model.Description
+</div>
+<div class="mb-3">
+    <strong>Hours Worked:</strong> @Model.HoursWorked
+</div>
+<div class="mb-3">
+    <strong>Hourly Rate:</strong> @Model.HourlyRate
+</div>
+<div class="mb-3">
+    <strong>Total Amount:</strong> @Model.TotalAmount
+</div>
+<div class="mb-3">
+    <strong>Status:</strong> @Model.Status
+</div>
+<div class="mb-3">
+    <strong>Submitted At:</strong> @Model.SubmittedAt.ToLocalTime()
+</div>
+<div class="mb-3">
+    <strong>Files:</strong><br />
+    @foreach (var file in Model.UploadedFiles)
+    {
+        <a asp-action="DownloadFile" asp-route-id="@Model.Id" asp-route-file="@System.IO.Path.GetFileName(file)">
+            @System.IO.Path.GetFileName(file)
+        </a>
+    
+        <br />
+    }
+</div>

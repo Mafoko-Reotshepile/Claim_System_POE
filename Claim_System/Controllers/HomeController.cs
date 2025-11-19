@@ -23,6 +23,25 @@ namespace Claim_System.Controllers
             return RedirectToAction("Index", "Claims");
         }
 
+        [Authorize(Roles = "Lecturer")]
+        public IActionResult LecturerDashboard()
+        {
+            return View();
+        }
+
+        [Authorize(Roles = "Coordinator")]
+        public IActionResult CoordinatorDashboard()
+        {
+            return View();
+        }
+
+        [Authorize(Roles = "HR")]
+        public IActionResult HrDashboard()
+        {
+            return View();
+        }
+
+
         // Error page
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error() => View();

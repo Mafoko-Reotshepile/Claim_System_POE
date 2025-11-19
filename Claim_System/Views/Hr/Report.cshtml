@@ -1,1 +1,32 @@
-﻿
+﻿@model List<Claim_System.Models.LecturerClaim>
+@{
+    ViewData["Title"] = "Approved Claims Report";
+}
+
+<h2>Approved Claims Report</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Lecturer</th>
+            <th>Description</th>
+            <th>Hours</th>
+            <th>Total</th>
+            <th>Submitted At</th>
+            <th>Last Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var claim in Model)
+        {
+            <tr>
+                <td>@claim.LecturerName</td>
+                <td>@claim.Description</td>
+                <td>@claim.HoursWorked</td>
+                <td>@claim.TotalAmount</td>
+                <td>@claim.SubmittedAt.ToLocalTime()</td>
+                <td>@claim.LastUpdatedAt.ToLocalTime()</td>
+            </tr>
+        }
+    </tbody>
+</table>

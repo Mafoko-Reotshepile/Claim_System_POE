@@ -1,53 +1,68 @@
+@using Microsoft.AspNetCore.Identity
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Claim System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
     <header>
-        <h1>Claim System</h1>
-
-        @if (User?.Identity?.IsAuthenticated ?? false)
-        {
-            <nav>
-                <a asp-controller="Claims" asp-action="Index">My Claims</a> |
-                <a asp-controller="Claims" asp-action="Create">Submit Claim</a>
-
-                @* Coordinator-only links *@
-                @if (User.IsInRole("Coordinator"))
-                {
-                    <text> | <a asp-controller="Claims" asp-action="Manage">Manage Claims</a></text>
-                    <text> | <a asp-controller="Claims" asp-action="Report">HR Report</a></text>
-                }
-            </nav>
-
-            <div>
-                <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline">
-                    <button type="submit" class="btn btn-link">Logout (@User.Identity?.Name)</button>
-                </form>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Claim System</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        @await Html.PartialAsync("_Nav")
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <span class="navbar-text text-light me-3">Hello, @User.Identity.Name</span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
             </div>
-        }
-        else
-        {
-            <nav>
-                <a asp-controller="Account" asp-action="Login">Login</a>
-            </nav>
-        }
-
-        <hr />
+        </nav>
     </header>
 
-    <main>
-        @RenderBody()
-    </main>
+    <div class="container mt-4">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
 
-    <footer>
-        <hr />
-        <small>&copy; 2025</small>
+        @RenderBody()
+    </div>
+
+    <footer class="text-center mt-5 mb-3">
+        <p>&copy; @DateTime.Now.Year Claim System</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

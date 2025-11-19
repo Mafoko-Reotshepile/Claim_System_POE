@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Lecturer Dashboard";
+}
+
+<h2>Lecturer Dashboard</h2>
+
+<p>Welcome, @User.Identity.Name</p>
+
+<div class="list-group">
+    <a asp-controller="Claims" asp-action="Index" class="list-group-item list-group-item-action">
+        View My Claims
+    </a>
+
+    <a asp-controller="Claims" asp-action="Create" class="list-group-item list-group-item-action">
+        Submit New Claim
+    </a>
+</div>
