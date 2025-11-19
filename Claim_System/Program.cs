@@ -13,9 +13,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/Login";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
     });
 
-builder.Services.AddSession();
+//builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -27,7 +28,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseSession();
+//app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

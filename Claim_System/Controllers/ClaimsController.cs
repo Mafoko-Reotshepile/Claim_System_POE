@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Claim_System.Models;
+using Claim_System.Data;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,6 @@ namespace Claim_System.Controllers
     [Authorize]
     public class ClaimsController : Controller
     {
-        public static List<Claim> _claims = new List<Claim>();
-        private static int _nextId = 1;
         private static readonly string[] AllowedExtensions = { ".pdf", ".doc", ".docx", ".xlsx" };
         private readonly string _uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
 
@@ -28,7 +27,9 @@ namespace Claim_System.Controllers
         public IActionResult Index()
         {
             var currentUser = User.Identity?.Name ?? string.Empty;
-            var myClaims = _claims.Where(c => string.Equals(c.LecturerName, currentUser, StringComparison.OrdinalIgnoreCase)).ToList();
+            var myClaims = ClaimsStore.Claims
+                .Where(c => string.Equals(c.LecturerName, currentUser, StringComparison.OrdinalIgnoreCase))
+                .ToList();
             return View(myClaims);
         }
 
@@ -36,13 +37,13 @@ namespace Claim_System.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            return View(new Claim());
+            return View(new LecturerClaim());
         }
 
         [Authorize(Roles = "Lecturer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Claim model, List<IFormFile>? files)
+        public async Task<IActionResult> Create(LecturerClaim model, List<IFormFile>? files)
         {
             if (model.HoursWorked <= 0) ModelState.AddModelError(nameof(model.HoursWorked), "Hours must be > 0");
             if (model.HourlyRate <= 0) ModelState.AddModelError(nameof(model.HourlyRate), "Rate must be > 0");
@@ -81,12 +82,12 @@ namespace Claim_System.Controllers
                 return View(model);
             }
 
-            model.Id = _nextId++;
+            model.Id = ClaimsStore.NextId++;
             model.LecturerName = User.Identity?.Name ?? model.LecturerName;
             model.SubmittedAt = DateTime.UtcNow;
             model.LastUpdatedAt = model.SubmittedAt;
             if (savedFiles.Any()) model.UploadedFiles.AddRange(savedFiles);
-            _claims.Add(model);
+            ClaimsStore.Claims.Add(model);
 
             TempData["SuccessMessage"] = "Claim submitted.";
             return RedirectToAction(nameof(Index));
@@ -95,14 +96,14 @@ namespace Claim_System.Controllers
         [Authorize(Roles = "Coordinator")]
         public IActionResult Manage()
         {
-            var model = _claims.OrderBy(c => c.Status).ThenByDescending(c => c.SubmittedAt).ToList();
+            var model = ClaimsStore.Claims.OrderBy(c => c.Status).ThenByDescending(c => c.SubmittedAt).ToList();
             return View(model);
         }
 
         [HttpGet]
         public IActionResult Details(int id)
         {
-            var claim = _claims.FirstOrDefault(c => c.Id == id);
+            var claim = ClaimsStore.Claims.FirstOrDefault(c => c.Id == id);
             if (claim == null) return NotFound();
 
             if (User.IsInRole("Lecturer") && !string.Equals(User.Identity?.Name, claim.LecturerName, StringComparison.OrdinalIgnoreCase))
@@ -114,10 +115,11 @@ namespace Claim_System.Controllers
         [HttpGet]
         public IActionResult DownloadFile(int id, string file)
         {
-            var claim = _claims.FirstOrDefault(c => c.Id == id);
+            var claim = ClaimsStore.Claims.FirstOrDefault(c => c.Id == id);
             if (claim == null || !claim.UploadedFiles.Any()) return NotFound();
 
-            var matched = claim.UploadedFiles.FirstOrDefault(f => f.EndsWith(file, StringComparison.OrdinalIgnoreCase));
+            // Match by file name (last segment)
+            var matched = claim.UploadedFiles.FirstOrDefault(f => Path.GetFileName(f).Equals(file, StringComparison.OrdinalIgnoreCase));
             if (matched == null) return Forbid();
 
             var physical = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", matched.Replace('/', Path.DirectorySeparatorChar));
@@ -139,9 +141,10 @@ namespace Claim_System.Controllers
 
         [Authorize(Roles = "Coordinator")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Approve(int id)
         {
-            var claim = _claims.FirstOrDefault(c => c.Id == id);
+            var claim = ClaimsStore.Claims.FirstOrDefault(c => c.Id == id);
             if (claim == null) { TempData["ErrorMessage"] = "Claim not found."; return RedirectToAction(nameof(Manage)); }
 
             claim.Status = "Approved";
@@ -152,9 +155,10 @@ namespace Claim_System.Controllers
 
         [Authorize(Roles = "Coordinator")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Reject(int id)
         {
-            var claim = _claims.FirstOrDefault(c => c.Id == id);
+            var claim = ClaimsStore.Claims.FirstOrDefault(c => c.Id == id);
             if (claim == null) { TempData["ErrorMessage"] = "Claim not found."; return RedirectToAction(nameof(Manage)); }
 
             claim.Status = "Rejected";

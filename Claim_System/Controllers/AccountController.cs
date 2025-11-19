@@ -33,6 +33,7 @@ namespace Claim_System.Controllers
                 return View();
             }
 
+            var role = isCoordinator ? "Coordinator" : isHR ? "HR" : "Lecturer";
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, username),
@@ -57,6 +58,7 @@ namespace Claim_System.Controllers
         
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

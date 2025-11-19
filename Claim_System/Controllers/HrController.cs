@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Claim_System.Models;
+using Claim_System.Data;
 using System.Linq;
 
 namespace Claim_System.Controllers
@@ -10,17 +10,11 @@ namespace Claim_System.Controllers
     {
         public IActionResult Report()
         {
-            var approved = ClaimsControllerData.Claims
+            var approved = ClaimsStore.Claims
                 .Where(c => c.Status == "Approved")
                 .ToList();
 
             return View(approved);
         }
-    }
-
-    // Shared claim data store for HR
-    public static class ClaimsControllerData
-    {
-        public static List<Claim> Claims => Claim_System.Controllers.ClaimsController._claims;
     }
 }

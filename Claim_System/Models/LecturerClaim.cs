@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Claim_System.Models
 {
-    public class Claim
+    public class LecturerClaim
     {
         public int Id { get; set; }
         public string LecturerName { get; set; } = string.Empty;

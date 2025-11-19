@@ -25,9 +25,6 @@ namespace Claim_System.Controllers
 
         // Error page
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View();
-        }
+        public IActionResult Error() => View();
     }
 }
