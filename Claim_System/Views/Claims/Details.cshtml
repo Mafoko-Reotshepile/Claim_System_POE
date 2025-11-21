@@ -5,35 +5,56 @@
 
 <h2>Claim Details</h2>
 
-<div class="mb-3">
-    <strong>Lecturer:</strong> @Model.LecturerName
+<div class="dashboard-card">
+    <dl class="row">
+        <dt class="col-sm-3">ID</dt>
+        <dd class="col-sm-9">@Model.Id</dd>
+
+        <dt class="col-sm-3">Lecturer</dt>
+        <dd class="col-sm-9">@Model.LecturerName</dd>
+
+        <dt class="col-sm-3">Hours Worked</dt>
+        <dd class="col-sm-9">@Model.HoursWorked</dd>
+
+        <dt class="col-sm-3">Hourly Rate</dt>
+        <dd class="col-sm-9">@Model.HourlyRate.ToString("C")</dd>
+
+        <dt class="col-sm-3">Total Amount</dt>
+        <dd class="col-sm-9">@Model.TotalAmount.ToString("C")</dd>
+
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">@Model.Status</dd>
+
+        <dt class="col-sm-3">Submitted At</dt>
+        <dd class="col-sm-9">@Model.SubmittedAt.ToLocalTime().ToString("g")</dd>
+
+        <dt class="col-sm-3">Last Updated</dt>
+        <dd class="col-sm-9">@Model.LastUpdatedAt.ToLocalTime().ToString("g")</dd>
+
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@Model.Description</dd>
+
+        <dt class="col-sm-3">Uploaded Files</dt>
+        <dd class="col-sm-9">
+            @if (Model.UploadedFiles.Any())
+            {
+                <ul class="uploaded-files">
+                    @foreach (var file in Model.UploadedFiles)
+                    {
+                        <li>
+                            <a target="_blank" href="@Url.Action("DownloadFile", "Claims", new { id = Model.Id, file = System.IO.Path.GetFileName(file) })">
+                                @System.IO.Path.GetFileName(file)
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>No files uploaded.</p>
+            }
+        </dd>
+    </dl>
 </div>
-<div class="mb-3">
-    <strong>Description:</strong> @Model.Description
-</div>
-<div class="mb-3">
-    <strong>Hours Worked:</strong> @Model.HoursWorked
-</div>
-<div class="mb-3">
-    <strong>Hourly Rate:</strong> @Model.HourlyRate
-</div>
-<div class="mb-3">
-    <strong>Total Amount:</strong> @Model.TotalAmount
-</div>
-<div class="mb-3">
-    <strong>Status:</strong> @Model.Status
-</div>
-<div class="mb-3">
-    <strong>Submitted At:</strong> @Model.SubmittedAt.ToLocalTime()
-</div>
-<div class="mb-3">
-    <strong>Files:</strong><br />
-    @foreach (var file in Model.UploadedFiles)
-    {
-        <a asp-action="DownloadFile" asp-route-id="@Model.Id" asp-route-file="@System.IO.Path.GetFileName(file)">
-            @System.IO.Path.GetFileName(file)
-        </a>
-    
-        <br />
-    }
-</div>
+
+<a href="javascript:history.back()" class="btn btn-secondary">Back</a>

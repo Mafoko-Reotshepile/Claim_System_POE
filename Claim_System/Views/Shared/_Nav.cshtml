@@ -1,34 +1,45 @@
-﻿@* Role-based navigation links *@
-@if (User.Identity.IsAuthenticated)
-{
-    if (User.IsInRole("Lecturer"))
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Home" asp-action="LecturerDashboard">Dashboard</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Claims" asp-action="Index">My Claims</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Claims" asp-action="Create">Submit Claim</a>
-        </li>
-    }
-    else if (User.IsInRole("Coordinator"))
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Home" asp-action="CoordinatorDashboard">Dashboard</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Claims" asp-action="Manage">Manage Claims</a>
-        </li>
-    }
-    else if (User.IsInRole("HR"))
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Home" asp-action="HrDashboard">Dashboard</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Hr" asp-action="Report">Approved Claims Report</a>
-        </li>
-    }
-}
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="@Url.Action("Index", "Home")">Claim System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                @if (User.IsInRole("Lecturer"))
+                {
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("LecturerDashboard", "Home")">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Claims")">My Claims</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Create", "Claims")">Submit Claim</a></li>
+                }
+                @if (User.IsInRole("Coordinator"))
+                {
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("CoordinatorDashboard", "Home")">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Manage", "Claims")">Manage Claims</a></li>
+                }
+                @if (User.IsInRole("HR"))
+                {
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("HrDashboard", "Home")">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Report", "Hr")">Approved Claims</a></li>
+                }
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <span class="nav-link text-warning">Logged in as: <strong>@User.Identity!.Name</strong></span>
+                </li>
+                <li class="nav-item">
+                    <form method="post" asp-controller="Account" asp-action="Logout">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-danger btn-sm ms-2" type="submit">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

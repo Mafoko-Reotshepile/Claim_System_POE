@@ -1,13 +1,8 @@
 ﻿@{
     ViewData["Title"] = "Coordinator Dashboard";
 }
-
 <h2>Coordinator Dashboard</h2>
-
-<p>Welcome, @User.Identity.Name</p>
-
+<p>Welcome, @User.Identity.Name!</p>
 <div class="list-group">
-    <a asp-controller="Claims" asp-action="Manage" class="list-group-item list-group-item-action">
-        Manage All Claims
-    </a>
+    <a class="list-group-item list-group-item-action" href="@Url.Action("Manage", "Claims")">Manage All Claims</a>
 </div>

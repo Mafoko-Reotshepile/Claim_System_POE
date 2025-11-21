@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Claim_System.Models;
 using Claim_System.Data;
 using Microsoft.AspNetCore.Http;
@@ -8,6 +8,7 @@ using System.Linq;
 using System.IO;
 using System;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Claim_System.Controllers
 {
@@ -26,7 +27,7 @@ namespace Claim_System.Controllers
         [Authorize(Roles = "Lecturer")]
         public IActionResult Index()
         {
-            var currentUser = User.Identity?.Name ?? string.Empty;
+            string currentUser = User.Identity?.Name ?? string.Empty;
             var myClaims = ClaimsStore.Claims
                 .Where(c => string.Equals(c.LecturerName, currentUser, StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -35,39 +36,48 @@ namespace Claim_System.Controllers
 
         [Authorize(Roles = "Lecturer")]
         [HttpGet]
-        public IActionResult Create()
-        {
-            return View(new LecturerClaim());
-        }
+        public IActionResult Create() => View(new SubmitClaimViewModel());
 
         [Authorize(Roles = "Lecturer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(LecturerClaim model, List<IFormFile>? files)
+        public async Task<IActionResult> Create(SubmitClaimViewModel model)
         {
-            if (model.HoursWorked <= 0) ModelState.AddModelError(nameof(model.HoursWorked), "Hours must be > 0");
-            if (model.HourlyRate <= 0) ModelState.AddModelError(nameof(model.HourlyRate), "Rate must be > 0");
+            if (!ModelState.IsValid)
+                return View(model);
 
+            // Validate files first
             var savedFiles = new List<string>();
-            if (files != null && files.Count > 0)
+            if (model.Files != null && model.Files.Count > 0)
             {
-                foreach (var file in files)
+                foreach (var file in model.Files)
                 {
                     if (file == null || file.Length == 0) continue;
+
                     var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
                     if (!AllowedExtensions.Contains(ext))
                     {
-                        ModelState.AddModelError("files", $"File type {ext} not allowed.");
-                        continue;
-                    }
-                    if (file.Length > 10 * 1024 * 1024)
-                    {
-                        ModelState.AddModelError("files", $"File {file.FileName} exceeds 10 MB limit.");
+                        ModelState.AddModelError("Files", $"File type {ext} not allowed.");
                         continue;
                     }
 
+                    if (file.Length > 10 * 1024 * 1024)
+                    {
+                        ModelState.AddModelError("Files", $"File {file.FileName} exceeds 10 MB limit.");
+                        continue;
+                    }
+                }
+
+                if (!ModelState.IsValid)
+                    return View(model);
+
+                // Save files
+                foreach (var file in model.Files)
+                {
+                    if (file == null || file.Length == 0) continue;
+                    var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
                     var unique = $"{Guid.NewGuid():N}{ext}";
-                    var relPath = Path.Combine("uploads", unique).Replace('\\', '/');
+                    var relPath = Path.Combine("uploads", unique).Replace("\\", "/");
                     var physical = Path.Combine(_uploadFolder, unique);
                     using (var stream = new FileStream(physical, FileMode.Create))
                     {
@@ -77,27 +87,34 @@ namespace Claim_System.Controllers
                 }
             }
 
-            if (!ModelState.IsValid)
+            // Thread-safe id generation
+            int id = Interlocked.Increment(ref ClaimsStore.NextId);
+            var claim = new LecturerClaim
             {
-                return View(model);
-            }
+                Id = id,
+                LecturerName = User.Identity?.Name ?? "",
+                Description = model.Description,
+                HoursWorked = model.HoursWorked,
+                HourlyRate = model.HourlyRate,
+                SubmittedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow,
+                UploadedFiles = savedFiles
+            };
 
-            model.Id = ClaimsStore.NextId++;
-            model.LecturerName = User.Identity?.Name ?? model.LecturerName;
-            model.SubmittedAt = DateTime.UtcNow;
-            model.LastUpdatedAt = model.SubmittedAt;
-            if (savedFiles.Any()) model.UploadedFiles.AddRange(savedFiles);
-            ClaimsStore.Claims.Add(model);
+            ClaimsStore.Claims.Add(claim);
 
-            TempData["SuccessMessage"] = "Claim submitted.";
+            TempData["SuccessMessage"] = "Claim submitted successfully!";
             return RedirectToAction(nameof(Index));
         }
 
         [Authorize(Roles = "Coordinator")]
         public IActionResult Manage()
         {
-            var model = ClaimsStore.Claims.OrderBy(c => c.Status).ThenByDescending(c => c.SubmittedAt).ToList();
-            return View(model);
+            var claims = ClaimsStore.Claims
+                .OrderBy(c => c.Status)
+                .ThenByDescending(c => c.SubmittedAt)
+                .ToList();
+            return View(claims);
         }
 
         [HttpGet]
@@ -116,9 +133,9 @@ namespace Claim_System.Controllers
         public IActionResult DownloadFile(int id, string file)
         {
             var claim = ClaimsStore.Claims.FirstOrDefault(c => c.Id == id);
-            if (claim == null || !claim.UploadedFiles.Any()) return NotFound();
+            if (claim == null || !claim.UploadedFiles.Any())
+                return NotFound();
 
-            // Match by file name (last segment)
             var matched = claim.UploadedFiles.FirstOrDefault(f => Path.GetFileName(f).Equals(file, StringComparison.OrdinalIgnoreCase));
             if (matched == null) return Forbid();
 

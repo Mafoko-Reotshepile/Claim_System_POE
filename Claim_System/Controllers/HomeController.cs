@@ -1,48 +1,35 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Claim_System.Controllers
 {
     public class HomeController : Controller
     {
-       
+        [AllowAnonymous]
         public IActionResult Index()
         {
-            // If the user is NOT logged in, send them to login
-            if (!User.Identity.IsAuthenticated)
-                return RedirectToAction("Login", "Account");
+            if (User.Identity?.IsAuthenticated ?? false)
+            {
+                HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme).Wait();
+                if (User.IsInRole("Coordinator")) return RedirectToAction("CoordinatorDashboard");
+                if (User.IsInRole("HR")) return RedirectToAction("HrDashboard");
+                return RedirectToAction("LecturerDashboard");
+            }
 
-            // If the user is logged in, redirect based on their role
-            if (User.IsInRole("Coordinator"))
-                return RedirectToAction("Manage", "Claims");
-
-            if (User.IsInRole("HR"))
-                return RedirectToAction("Report", "Hr");
-
-            
-            return RedirectToAction("Index", "Claims");
+            return RedirectToAction("Login", "Account");
         }
 
         [Authorize(Roles = "Lecturer")]
-        public IActionResult LecturerDashboard()
-        {
-            return View();
-        }
+        public IActionResult LecturerDashboard() => View();
 
         [Authorize(Roles = "Coordinator")]
-        public IActionResult CoordinatorDashboard()
-        {
-            return View();
-        }
+        public IActionResult CoordinatorDashboard() => View();
 
         [Authorize(Roles = "HR")]
-        public IActionResult HrDashboard()
-        {
-            return View();
-        }
+        public IActionResult HrDashboard() => View();
 
-
-        // Error page
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error() => View();
     }

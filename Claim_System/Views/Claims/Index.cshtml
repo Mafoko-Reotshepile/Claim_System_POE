@@ -5,47 +5,43 @@
 
 <h2>My Claims</h2>
 
-<p>
-    <a class="btn btn-primary" asp-action="Create">Submit New Claim</a>
-</p>
+<div class="dashboard-card">
+    @if (!Model.Any())
+    {
+        <p>You have not submitted any claims yet.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Hours Worked</th>
+                    <th>Hourly Rate</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Submitted At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model)
+                {
+                    <tr>
+                        <td>@claim.Id</td>
+                        <td>@claim.HoursWorked</td>
+                        <td>@claim.HourlyRate.ToString("C")</td>
+                        <td>@claim.TotalAmount.ToString("C")</td>
+                        <td>@claim.Status</td>
+                        <td>@claim.SubmittedAt.ToLocalTime().ToString("g")</td>
+                        <td>
+                            <a class="btn btn-primary btn-sm" href="@Url.Action("Details", "Claims", new { id = claim.Id })">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Submitted At</th>
-            <th>Description</th>
-            <th>Hours</th>
-            <th>Rate</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Files</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var claim in Model)
-        {
-            <tr>
-                <td>@claim.SubmittedAt.ToLocalTime()</td>
-                <td>@claim.Description</td>
-                <td>@claim.HoursWorked</td>
-                <td>@claim.HourlyRate</td>
-                <td>@claim.TotalAmount</td>
-                <td>@claim.Status</td>
-                <td>
-                    @foreach (var file in claim.UploadedFiles)
-                    {
-                        <a asp-action="DownloadFile" asp-route-id="@claim.Id" asp-route-file="@System.IO.Path.GetFileName(file)">
-                            @System.IO.Path.GetFileName(file)
-                        </a>
-                
-                        <br />
-                    }
-                </td>
-                <td>
-                    <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@claim.Id">Details</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<a class="btn btn-success mt-2" href="@Url.Action("Create", "Claims")">Submit New Claim</a>

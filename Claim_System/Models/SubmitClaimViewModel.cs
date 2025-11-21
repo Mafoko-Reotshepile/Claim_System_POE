@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
@@ -7,16 +6,16 @@ namespace Claim_System.Models
 {
     public class SubmitClaimViewModel
     {
-        [Required(ErrorMessage = "Hours worked is required")]
+        [Required(ErrorMessage = "Hours Worked is required")]
         [Range(0.1, 1000, ErrorMessage = "Hours must be greater than 0")]
         public double HoursWorked { get; set; }
 
-        [Required(ErrorMessage = "Hourly rate is required")]
+        [Required(ErrorMessage = "Hourly Rate is required")]
         [Range(0.1, 10000, ErrorMessage = "Rate must be greater than 0")]
-        public double HourlyRate { get; set; }
+        public decimal HourlyRate { get; set; }
 
         [Required(ErrorMessage = "Description is required")]
-        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+        [StringLength(500, ErrorMessage = "Description max 500 characters")]
         public string Description { get; set; } = string.Empty;
 
         // Multiple file uploads

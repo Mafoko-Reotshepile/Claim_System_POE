@@ -6,6 +6,10 @@
 <h2>Submit Claim</h2>
 
 <form asp-action="Create" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
     <div class="mb-3">
         <label asp-for="HoursWorked" class="form-label"></label>
         <input asp-for="HoursWorked" class="form-control" />
@@ -20,19 +24,21 @@
 
     <div class="mb-3">
         <label asp-for="Description" class="form-label"></label>
-        <textarea asp-for="Description" class="form-control"></textarea>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="Files" class="form-label">Upload Files (optional)</label>
-        <input asp-for="Files" type="file" class="form-control" multiple />
-        <span asp-validation-for="Files" class="text-danger"></span>
+        <label class="form-label">Upload Files</label>
+        <input type="file" name="Files" multiple class="form-control" />
+        <small class="form-text text-muted">Allowed: .pdf, .doc, .docx, .xlsx (max 10MB each)</small>
+        <span class="text-danger">@ViewData.ModelState["Files"]?.Errors.FirstOrDefault()?.ErrorMessage</span>
     </div>
 
-    <button type="submit" class="btn btn-success">Submit</button>
+    <button type="submit" class="btn btn-success">Submit Claim</button>
+    <a class="btn btn-secondary" href="@Url.Action("Index", "Claims")">Cancel</a>
 </form>
 
 @section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <partial name="_ValidationScriptsPartial" />
 }

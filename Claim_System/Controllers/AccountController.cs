@@ -1,9 +1,10 @@
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Security.Claims;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Claim_System.Models;
 
 namespace Claim_System.Controllers
 {
@@ -12,50 +13,59 @@ namespace Claim_System.Controllers
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            return View();
+            return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(string username, string password, string? returnUrl)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            username = username?.Trim().ToLower()??"";
-            password = password?.Trim()??"";
+            if (!ModelState.IsValid)
+                return View(model);
 
+            string username = model.Username?.Trim().ToLower() ?? "";
+            string password = model.Password?.Trim() ?? "";
+
+            // Demo hardcoded users (lowercase usernames)
             bool isLecturer = username == "lecturer" && password == "123";
             bool isCoordinator = username == "coordinator" && password == "123";
             bool isHR = username == "hr" && password == "123";
 
-
             if (!isLecturer && !isCoordinator && !isHR)
             {
                 ViewBag.Error = "Invalid username or password.";
-                return View();
+                return View(model);
             }
 
-            var role = isCoordinator ? "Coordinator" : isHR ? "HR" : "Lecturer";
+            string role = isCoordinator ? "Coordinator" : isHR ? "HR" : "Lecturer";
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, isCoordinator ? "Coordinator": isHR ? "HR" : "Lecturer")
+                new Claim(ClaimTypes.Role, role)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-            if (!string.IsNullOrEmpty(returnUrl))
-                return LocalRedirect(returnUrl);
+            var authProps = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = System.DateTimeOffset.UtcNow.AddHours(1)
+            };
 
-            if (isCoordinator)
-                return RedirectToAction("Manage", "Claims");
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProps);
 
-            if (isHR)
-                return RedirectToAction("Report", "Hr");
+            if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                return LocalRedirect(model.ReturnUrl);
 
-            return RedirectToAction("Index", "Claims");
+            return role switch
+            {
+                "Coordinator" => RedirectToAction("CoordinatorDashboard", "Home"),
+                "HR" => RedirectToAction("HrDashboard", "Home"),
+                _ => RedirectToAction("LecturerDashboard", "Home")
+            };
         }
-        
 
         [HttpPost]
         [ValidateAntiForgeryToken]

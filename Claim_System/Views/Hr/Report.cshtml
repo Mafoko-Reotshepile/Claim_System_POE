@@ -1,32 +1,43 @@
 ﻿@model List<Claim_System.Models.LecturerClaim>
 @{
-    ViewData["Title"] = "Approved Claims Report";
+    ViewData["Title"] = "HR Approved Claims Report";
 }
 
-<h2>Approved Claims Report</h2>
+<h2>HR Approved Claims Report</h2>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Lecturer</th>
-            <th>Description</th>
-            <th>Hours</th>
-            <th>Total</th>
-            <th>Submitted At</th>
-            <th>Last Updated</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var claim in Model)
-        {
-            <tr>
-                <td>@claim.LecturerName</td>
-                <td>@claim.Description</td>
-                <td>@claim.HoursWorked</td>
-                <td>@claim.TotalAmount</td>
-                <td>@claim.SubmittedAt.ToLocalTime()</td>
-                <td>@claim.LastUpdatedAt.ToLocalTime()</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="dashboard-card">
+    @if (!Model.Any())
+    {
+        <p>No approved claims found.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>LecturerName</th>
+                    <th>LecturerID</th>
+                    <th>Hours</th>
+                    <th>Total Amount</th>
+                    <th>Submitted</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model)
+                {
+                    <tr>
+                        <td>@claim.Id</td>
+                        <td>@claim.LecturerName</td>
+                        <td>@claim.LecturerId</td>
+                        <td>@claim.HoursWorked</td>
+                        <td>@claim.TotalAmount.ToString("C")</td>
+                        <td>@claim.SubmittedAt.ToLocalTime().ToString("g")</td>
+                        <td>@claim.LastUpdatedAt.ToLocalTime().ToString("g")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

@@ -9,16 +9,12 @@ namespace Claim_System.Models
         public string LecturerName { get; set; } = string.Empty;
         public string LecturerId { get; set; } = string.Empty;
         public double HoursWorked { get; set; }
-        public double HourlyRate { get; set; }
+        public decimal HourlyRate { get; set; }
+        public decimal TotalAmount => (decimal)HoursWorked * HourlyRate;
         public string Description { get; set; } = string.Empty;
-
-        // List of uploaded file paths
         public List<string> UploadedFiles { get; set; } = new List<string>();
-      
         public string Status { get; set; } = "Pending";
-        public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
-        public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;
-
-        public double TotalAmount => Math.Round(HoursWorked * HourlyRate, 2);
+        public DateTime SubmittedAt { get; set; }
+        public DateTime LastUpdatedAt { get; set; }
     }
 }

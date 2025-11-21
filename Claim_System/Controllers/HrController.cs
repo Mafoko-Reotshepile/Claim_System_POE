@@ -10,11 +10,11 @@ namespace Claim_System.Controllers
     {
         public IActionResult Report()
         {
-            var approved = ClaimsStore.Claims
+            var approvedClaims = ClaimsStore.Claims
                 .Where(c => c.Status == "Approved")
                 .ToList();
 
-            return View(approved);
+            return View(approvedClaims);
         }
     }
 }

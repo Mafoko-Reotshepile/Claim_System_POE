@@ -5,39 +5,51 @@
 
 <h2>Manage Claims</h2>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Lecturer</th>
-            <th>Description</th>
-            <th>Hours</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Submitted At</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var claim in Model)
-        {
+<div class="dashboard-card">
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>@claim.LecturerName</td>
-                <td>@claim.Description</td>
-                <td>@claim.HoursWorked</td>
-                <td>@claim.TotalAmount</td>
-                <td>@claim.Status</td>
-                <td>@claim.SubmittedAt.ToLocalTime()</td>
-                <td>
-                    <form asp-action="Approve" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@claim.Id" />
-                        <button type="submit" class="btn btn-sm btn-success" @(claim.Status == "Pending" ? "" : "disabled")>Approve</button>
-                    </form>
-                    <form asp-action="Reject" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@claim.Id" />
-                        <button type="submit" class="btn btn-sm btn-danger" @(claim.Status == "Pending" ? "" : "disabled")>Reject</button>
-                    </form>
-                </td>
+                <th>ID</th>
+                <th>LecturerName</th>
+                <th>LecturerID</th>
+                <th>Hours</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var claim in Model)
+            {
+                <tr>
+                    <td>@claim.Id</td>
+                    <td>@claim.LecturerName</td>
+                    <td>@claim.LecturerId</td>
+                    <td>@claim.HoursWorked</td>
+                    <td>@claim.TotalAmount.ToString("C")</td>
+                    <td>@claim.Status</td>
+                    <td>@claim.SubmittedAt.ToLocalTime().ToString("g")</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="@Url.Action("Details", "Claims", new { id = claim.Id })">Details</a>
+
+                        @if (claim.Status == "Pending")
+                        {
+                            <form id="approveForm@claim.Id" asp-action="Approve" method="post" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@claim.Id" />
+                                <button type="button" class="btn btn-success btn-sm" onclick="confirmAction('Approve this claim?', 'approveForm@claim.Id')">Approve</button>
+                            </form>
+
+                            <form id="rejectForm@claim.Id" asp-action="Reject" method="post" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@claim.Id" />
+                                <button type="button" class="btn btn-danger btn-sm" onclick="confirmAction('Reject this claim?', 'rejectForm@claim.Id')">Reject</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
